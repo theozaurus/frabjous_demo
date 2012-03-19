@@ -1,0 +1,148 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+  <head> 
+    <meta charset="utf-8">
+    <title>Frabjous Demo</title>
+    <link href="vendor/codemirror/codemirror.css" rel="stylesheet" type="text/css">    
+    <link href="vendor/bootstrap/bootstrap.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="vendor/codemirror/codemirror.js"></script>
+    <script type="text/javascript" src="vendor/codemirror/xmlpure.js"></script>
+    <script type="text/javascript" src="vendor/frabjous/frabjous.js"></script>
+    <script type="text/javascript" src="src/application.js"></script>
+
+    <script type="text/x-handlebars" data-template-name="presence">
+      <dl>
+        {{#if content.status }}            
+          <dt>Status</dt>
+          <dd>{{content.status}}</dd>
+        {{/if}}
+        {{#if content.show }}
+          <dt>Show</dt>
+          <dd>{{content.show}}</dd>
+        {{/if}}
+        {{#if content.type }}
+          <dt>Type</dt>
+          <dd>{{content.type}}</dd>
+        {{/if}}
+        <dt>Priority</dt>
+        <dd>{{content.priority}}</dd>
+        <dt>Received</dt>
+        <dd>{{content.received_at}}</dd>
+      </dl>
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="message">
+      <dl>
+        {{#if content.from }}      
+          <dt>From</dt>
+          <dd>{{content.from}}</dd>
+        {{/if}}
+        {{#if content.to }}
+          <dt>To</dt>
+          <dd>{{content.to}}</dd>
+        {{/if}}
+        <dt>Received</dt>
+        <dd>{{content.received_at}}</dd>
+        <dt>Type</dt>
+        <dd>{{content.type}}</dd>
+        {{#if content.subject}}
+          <dt>Subject</dt>
+          <dd>{{content.subject}}</dd>
+        {{/if}}
+        {{#if content.body }}
+          <dt>Body</dt>
+          <dd>{{content.body}}</dd>
+        {{/if}}
+      </dl>
+    </script>
+    
+    <script type="text/x-handlebars" data-template-name="thread">
+      <dl>
+        <dt>ID</dt>
+        <dd>{{content.id}}</dd>
+        {{#if content.messages }}
+          <dt>Messages</dt>
+          <dd><ul>
+            {{#each content.messages}}
+              <li>{{view templateName="message" contentBinding="this"}}</li>
+            {{/each}}
+          </ul></dd>
+        {{/if}}
+        <dt>Child Threads</dt>
+        <dd><ul>
+          {{#each content.child_threads}}
+            <li>{{view templateName="thread" contentBinding="this"}}</li>
+          {{/each}}
+        </ul></dd>
+      </dl>
+    </script>
+    
+  </head> 
+  <body>
+    <div class="container-fluid">
+      <div class="page-header">
+        <h1>Frabjous Demo</h1>
+      </div>
+      <div class='row-fluid'>
+        <section id='example_stanzas' class='span6'>
+          <h3>Example Stanzas</h3>
+          <ul>
+          </ul>
+        </section>
+        <section class='span6'>
+          <h3>Stanzas to send</h3>
+          <form class="well" id='stanza_form'>
+            <textarea id="code" name="code"></textarea>
+            <input type="submit" value="Send" class="btn btn-primary">
+          </form>
+        </section>
+      </div>
+      <div class='row-fluid'>
+        <h2>Models</h2>
+        <div class='span4'>
+          <script type="text/x-handlebars">
+            <h3>Contacts</h3>
+            <ul>
+              {{#each Frabjous.contactsController}}
+                <dl>
+                  <dt>JID</dt>
+                  <dd>{{jid}}</dd>
+                  <dt>Messages from</dt>
+                  <dd>
+                    <ul>
+                      {{#each messages_from}}
+                        <li>{{view templateName="message" contentBinding="this"}}</li>
+                      {{/each}}
+                    </ul>
+                  </dd>
+                  {{#if presence }}
+                    <dt>Presence</dt>
+                    <dd>{{view templateName="presence" contentBinding="presence"}}</dd>
+                  {{/if}}
+                  <dt>Presence History</dt>
+                  <dd>
+                    <ul>
+                      {{#each presence_history}}
+                        <li>{{view templateName="presence" contentBinding="this"}}</li>
+                      {{/each}}
+                    </ul>
+                  </dd>
+                </dl>
+              {{/each}}
+            </ul>
+          </script>
+        </div>
+        <div class='span4'>        
+          <script type="text/x-handlebars">
+            <h3>Threads</h3>
+            <ul>
+              {{#each Frabjous.threadsController.rootThreads}}
+                {{view templateName="thread" contentBinding="this"}}
+              {{/each}}
+            </ul>
+          </script>
+        </div>
+      </div>
+    </div>
+  </body> 
+</html>
