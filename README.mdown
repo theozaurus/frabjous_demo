@@ -1,0 +1,27 @@
+Frabjous Demo
+=============
+
+This is a simple example application that builds a UI on top of the [Frabjous library](https://github.com/theozaurus/frabjous). It provides an interface to manually enter stanzas so the system can easily be demonstrated without having to setup a real XMPP server.
+
+Usage
+=====
+
+Just open `index.html` in your browser.
+
+Currently supported
+===================
+
+- Presence (no roster support)
+- Messages
+- [XEP-0201](http://xmpp.org/extensions/xep-0201.html) Best Practices for Message Threads
+- [XEP-0203](http://xmpp.org/extensions/xep-0203.html) Delayed Delivery
+
+TODO
+====
+
+- Allow sending of messages with reply and error handling
+- Roster support
+- Pubsub
+- PEP
+- Ad-Hoc Commands
+- ...
