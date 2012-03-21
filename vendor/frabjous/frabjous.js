@@ -29035,10 +29035,12 @@ Frabjous.Message = DS.Model.extend({
     
     if( Ember.none(client_id) ){
       // No contact exists, so create one
+      Frabjous.log.debug("Creating Frabjous.Contact " + id);
       Frabjous.Store.load_and_find(type,{jid: id, _messages_from:[this.get('id')]});
       contact = Frabjous.Store.find(type,id);
     }else{
       // Update contact
+      Frabjous.log.debug("Updating Frabjous.Contact " + id);
       contact = Frabjous.Store.find(type,id);
       contact.get('_messages_from').addObject(this);
     }
@@ -29053,7 +29055,7 @@ Frabjous.Message = DS.Model.extend({
 Frabjous.Contact.reopen({
   // Allows me to override the ordering in XEP-0203, I don't like this method
   _messages_from: DS.hasMany('Frabjous.Message'),
-  messages_from: function(){ return this.get('_messages_from'); }.property('_messages_from')
+  messages_from: function(){ return this.get('_messages_from'); }.property('_messages_from.@each')
 });
 
 Frabjous.Parser.register("Message", function(stanza){
@@ -29094,10 +29096,12 @@ Frabjous.Presence = DS.Model.extend({
     
     if( Ember.none(client_id) ){
       // No contact exists, so create one
+      Frabjous.log.debug("Creating Frabjous.Contact " + id);
       Frabjous.Store.load_and_find(type,{jid: id, _presence_history:[this.get('id')]});
       contact = Frabjous.Store.find(type,id);
     }else{
       // Update contact
+      Frabjous.log.debug("Updating Frabjous.Contact " + id);
       contact = Frabjous.Store.find(type,id);
       contact.get('_presence_history').addObject(this);
     }
@@ -29109,10 +29113,10 @@ Frabjous.Presence = DS.Model.extend({
 Frabjous.Contact.reopen({
   // Allows me to override the ordering in XEP-0203, I don't like this method
   _presence_history: DS.hasMany('Frabjous.Presence'),
-  presence_history: function(){ return this.get('_presence_history'); }.property('_presence_history'),
+  presence_history: function(){ return this.get('_presence_history'); }.property('_presence_history.@each'),
   presence: function(){
     return this.get('presence_history').get('lastObject');
-  }.property('presence_history')
+  }.property('presence_history.@each')
 });
 
 Frabjous.Parser.register("Presence", function(stanza){
@@ -29200,7 +29204,7 @@ Frabjous.Thread = DS.Model.extend({
   parent_id:        DS.attr('string'),
   child_threads:    DS.hasMany('Frabjous.Thread'),
   _messages:        DS.hasMany('Frabjous.Message'),
-  messages:         function(){ return this.get('_messages'); }.property('_messages'),
+  messages:         function(){ return this.get('_messages'); }.property('_messages.@each'),
   hasParent:        function(){ return !Ember.none(this.get('parent_id'));}.property('parent_id')
 });
 
@@ -29216,14 +29220,16 @@ Frabjous.Message.reopen({
 
     if( Ember.none(client_id) ){
       // Create
+      Frabjous.log.debug("Creating Frabjous.Thread " + id);
       Frabjous.Store.load_and_find(type,{id: id, _messages:[this.get('id')], parent_id: parent_id});
       thread = Frabjous.Store.find(type,id);
     }else{
       // Update
+      Frabjous.log.debug("Updating Frabjous.Thread " + id);
       thread = Frabjous.Store.find(type,id);
       thread.get('_messages').addObject(this);
       if( !Ember.none(parent_id) ){
-        thread.set('parent_id',parent_id)
+        thread.set('parent_id',parent_id);
       }
     }
     this.set('thread', thread);
@@ -29236,10 +29242,12 @@ Frabjous.Message.reopen({
 
     if( Ember.none(client_id) ){
       // Create
+      Frabjous.log.debug("Creating parent Frabjous.Thread " + id);
       Frabjous.Store.load_and_find(type,{id: id, child_threads: [this.get('thread').get('id')]});
       thread = Frabjous.Store.find(type,id);
     }else{
       // Update
+      Frabjous.log.debug("Updating parent Frabjous.Thread " + id);
       thread = Frabjous.Store.find(type,id);
       thread.get('child_threads').addObject(this.get('thread'));
     }
@@ -29285,19 +29293,19 @@ Frabjous.Presence.reopen( Frabjous.Delay.instance_properties );
 Frabjous.Contact.reopen({
   presence_history: function(){
     return this.get('_presence_history').slice().sort(Frabjous.Delay.sort);
-  }.property('_presence_history')
+  }.property('_presence_history.@each')
 });
 
 Frabjous.Contact.reopen({
   messages: function(){
     return this.get('_messages_from').slice().sort(Frabjous.Delay.sort);
-  }.property('_messages_from')
+  }.property('_messages_from.@each')
 });
 
 Frabjous.Thread.reopen({
   messages: function(){
     return this.get('_messages').slice().sort(Frabjous.Delay.sort);
-  }.property('messages')
+  }.property('_messages.@each')
 });
 
 Frabjous.Parser.register("XEP-0203", function(stanza){

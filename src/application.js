@@ -13,6 +13,16 @@ $(document).ready(function(){
     e0ffe42b28561960c6b12b944a092794b9683a38\n\
   </thread>\n\
 </message>",
+    "Thread":
+"<message\n\
+    to='romeo@montague.net/orchard'\n\
+    from='juliet@capulet.com/balcony'\n\
+    type='chat'>\n\
+  <body>Of that tongue's utterance, yet I know the sound.</body>\n\
+  <thread>\n\
+    7edac73ab41e45c4aafa7b2d7b749080\n\
+  </thread>\n\
+</message>",
     "Presence with delay":
 "<presence\n\
     from='juliet@capulet.com/balcony'\n\
@@ -29,6 +39,16 @@ $(document).ready(function(){
     from='juliet@capulet.com/balcony'\n\
     type='unavailable'>\n\
   <status>gone home</status>\n\
+</presence>",
+    "Presence slightly delayed":
+"<presence\n\
+    from='juliet@capulet.com/balcony'\n\
+    type='unavailable'>\n\
+  <status>stepped away</status>\n\
+  <show>away</show>\n\
+  <delay xmlns='urn:xmpp:delay'\n\
+     from='juliet@capulet.com/balcony'\n\
+     stamp='2012-03-21T11:37:07Z'/>\n\
 </presence>"
   };
 
@@ -36,7 +56,10 @@ $(document).ready(function(){
     var $element = $("<li><a href='#'>"+k+"</a></li>");
     $('#example_stanzas ul').append($element);
     
-    $('#code').val(v);
+    var $textarea = $('#code');
+    if($textarea.val() === ""){
+      $('#code').val(v);
+    }
     
     $element.click(function(){
       editor.setValue(v);
