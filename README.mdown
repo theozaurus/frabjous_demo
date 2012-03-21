@@ -6,7 +6,7 @@ This is a simple example application that builds a UI on top of the [Frabjous li
 Usage
 =====
 
-Just open `index.html` in your browser.
+Either download latests version and open `index.html` in your browser, or view [online version](http://theozaurus.github.com/frabjous_demo/).
 
 Currently supported
 ===================
