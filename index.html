@@ -33,6 +33,8 @@
 
     <script type="text/x-handlebars" data-template-name="message">
       <dl>
+        <dt>ID</dt>
+        <dd>{{content.id}}</dd>
         {{#if content.from }}      
           <dt>From</dt>
           <dd>{{content.from}}</dd>
@@ -111,6 +113,14 @@
                   <dd>
                     <ul>
                       {{#each messages_from}}
+                        <li>{{view templateName="message" contentBinding="this"}}</li>
+                      {{/each}}
+                    </ul>
+                  </dd>
+                  <dt>Messages to</dt>
+                  <dd>
+                    <ul>
+                      {{#each messages_to}}
                         <li>{{view templateName="message" contentBinding="this"}}</li>
                       {{/each}}
                     </ul>
