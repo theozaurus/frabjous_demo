@@ -28837,6 +28837,28 @@ Frabjous.Parser = function(){
   // Private
   var _handlers = {};
 
+  var create_or_update = function(item){
+    var frabjous_type = item.frabjous_type;
+    delete item.frabjous_type;
+    
+    Frabjous.log.debug("Parsed "+frabjous_type+":",item);
+    
+    // Consider handling errors in another way
+    var existing  = !Ember.none(Frabjous.Store.clientIdForId(frabjous_type,item.id));
+    var has_error = !Ember.none(item.error);
+    if(existing && has_error){
+      Frabjous.log.debug("Adding error to existing object "+frabjous_type+":",item.error);
+      var o = Frabjous.Store.find(frabjous_type,item.id);
+      var raw = o.toJSON();
+      raw.error = item.error;
+      return Frabjous.Store.load_and_find(frabjous_type,raw);
+    } else {
+      // No error, or no existing object
+      Frabjous.log.debug("Creating new object "+frabjous_type+":",item);
+      return Frabjous.Store.load_and_find(frabjous_type,item);
+    }
+  };
+
   return {
     // Class Methods
     handle: function(stanza){
@@ -28854,14 +28876,11 @@ Frabjous.Parser = function(){
       var first_result;
       for(var i in items){
         if(items.hasOwnProperty(i)){
-          var item = items[i];
-          var frabjous_type = item.frabjous_type;
-          delete item.frabjous_type;
-          Frabjous.log.debug("Parsed "+frabjous_type+":",item);
-          var result = Frabjous.Store.load_and_find(frabjous_type,item);
+          var result = create_or_update(items[i]);
           if(Ember.none(first_result)){ first_result = result; }
         }
       }
+      
       return first_result;
     },
     handlers: function(){
@@ -29158,7 +29177,10 @@ Frabjous.Error.instance_properties = {
   error: DS.hasOne(Frabjous.Error,{ embedded: true }),
   has_error: function(){
     return !Ember.none(this.get('error'));
-  }.property('error')
+  }.property('error'),
+  is_success: function(){
+    return !this.get('has_error');
+  }.property('has_error')
 };
 
 Frabjous.Message.reopen( Frabjous.Error.instance_properties );
@@ -29491,3 +29513,37 @@ Frabjous.CallbackList = (function(){
   };
   
 })();
+// This object will be overridden by a real connection adapter, but is here as a holding spot
+Frabjous.Connection = Ember.Object.create({
+  status:  null,
+  connect: function(){
+    Frabjous.Log.error("Please override connect with the adapter you want to use");
+  },
+  bind: function(){
+    Frabjous.Log.error("Please override bind with the adapter you want to use");
+  },
+  _send_now: function(stanza){
+    Frabjous.Log.error("Please override _send_now with the adapter you want to use");
+  },
+  receive: function(stanza){
+    // Called when a XMPP stanza is received
+    var s = new Frabjous.Stanza(stanza);
+    
+    // Parse stanza
+    var object = Frabjous.Parser.handle(s);
+    
+    // Deal with callbacks
+    this.get('callbacks').handle(s.id(),object.get('is_success'),object);
+  },
+  send: function(stanza,callbacks){
+    // Used to deal with callbacks before handing off to low level XMPP client
+    var s = new Frabjous.Stanza(stanza);
+    callbacks = callbacks || [];
+    
+    this.get('callbacks').add(s.id(),callbacks);
+    Frabjous.Parser.handle(s);
+    
+    this._send_now(stanza);
+  },
+  callbacks: new Frabjous.CallbackList()
+});

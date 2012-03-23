@@ -1,7 +1,7 @@
 Frabjous Demo
 =============
 
-This is a simple example application that builds a UI on top of the [Frabjous library](https://github.com/theozaurus/frabjous). It provides an interface to manually enter stanzas so the system can easily be demonstrated without having to setup a real XMPP server.
+This is a simple example application that builds a UI on top of the [Frabjous library](https://github.com/theozaurus/frabjous). It provides an interface to manually enter stanzas that will be sent, and their replies so the system can easily be demonstrated without having to setup a real XMPP server.
 
 Usage
 =====
@@ -19,7 +19,6 @@ Currently supported
 TODO
 ====
 
-- Allow sending of messages with reply and error handling
 - Roster support
 - Pubsub
 - PEP

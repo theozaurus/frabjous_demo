@@ -3,7 +3,8 @@
 $(document).ready(function(){
   // Load up eample stanzas
   var examples = {
-    "Message with thread and parent":
+    "Message with thread and parent": {
+      "receive":
 "<message\n\
     to='romeo@montague.net/orchard'\n\
     from='juliet@capulet.com/balcony'\n\
@@ -12,86 +13,121 @@ $(document).ready(function(){
   <thread parent='7edac73ab41e45c4aafa7b2d7b749080'>\n\
     e0ffe42b28561960c6b12b944a092794b9683a38\n\
   </thread>\n\
-</message>",
-    "Message with thread":
+</message>"
+    },
+    "Message with thread": {
+      "receive": 
 "<message\n\
     to='romeo@montague.net/orchard'\n\
     from='juliet@capulet.com/balcony'\n\
     type='chat'>\n\
-  <body>Of that tongue's utterance, yet I know the sound.</body>\n\
+  <body>\n\
+    Of that tongue's utterance, yet I know the sound.\n\
+  </body>\n\
   <thread>\n\
     7edac73ab41e45c4aafa7b2d7b749080\n\
   </thread>\n\
-</message>",
-    "Presence with delay":
+</message>"
+    },
+    "Presence with delay": {
+      "receive":
 "<presence\n\
     from='juliet@capulet.com/balcony'\n\
-    to='romeo@montague.net'>\n\
+    to='romeo@montague.net/orchard'>\n\
   <status>anon!</status>\n\
   <show>xa</show>\n\
   <priority>1</priority>\n\
   <delay xmlns='urn:xmpp:delay'\n\
-     from='juliet@capulet.com/balcony'\n\
-     stamp='2002-09-10T23:41:07Z'/>\n\
-</presence>",
-    "Presence":
+    from='juliet@capulet.com/balcony'\n\
+    stamp='2002-09-10T23:41:07Z'/>\n\
+</presence>"
+    },
+    "Presence": {
+      "receive":
 "<presence\n\
     from='juliet@capulet.com/balcony'\n\
     type='unavailable'>\n\
   <status>gone home</status>\n\
-</presence>",
-    "Presence slightly delayed":
+</presence>"
+    },
+    "Presence slightly delayed": {
+      "receive":
 "<presence\n\
     from='juliet@capulet.com/balcony'\n\
     type='unavailable'>\n\
   <status>stepped away</status>\n\
   <show>away</show>\n\
   <delay xmlns='urn:xmpp:delay'\n\
-     from='juliet@capulet.com/balcony'\n\
-     stamp='2012-03-21T11:37:07Z'/>\n\
-</presence>",
-    "Message with error":
+    from='juliet@capulet.com/balcony'\n\
+    stamp='2012-03-21T11:37:07Z'/>\n\
+</presence>"
+    },
+    "Message with error": {
+      "send":
 "<message\n\
-    from='romeo@montague.net'\n\
-    to='juliet@capulet.com/balcony'\n\
+    from='romeo@montague.net/orchard'\n\
+    id='ud7n1f4h'\n\
+    to='bar@example.org'\n\
+    type='chat'>\n\
+  <body>yt?</body>\n\
+</message>",
+      "receive":
+"<message\n\
+    from='bar@example.org'\n\
+    to='romeo@montague.net/orchard'\n\
+    id='ud7n1f4h'\n\
     type='error'>\n\
-  <error by='montague.net' type='cancel'>\n\
-    <gone xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'>\n\
-      xmpp:romeo@afterlife.montague.net\n\
-    </gone>\n\
+  <error type='cancel'>\n\
+    <remote-server-not-found\n\
+      xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/>\n\
   </error>\n\
 </message>"
+    }
+  };
+
+  // Setup nice syntax highlighting for the form input
+  var editor_send    = CodeMirror.fromTextArea(document.getElementById("send"),    {mode: {name: "xmlpure"}});
+  var editor_receive = CodeMirror.fromTextArea(document.getElementById("receive"), {mode: {name: "xmlpure"}});
+
+  var load_editor = function(stanzas){
+    editor_send.setValue(stanzas.send || "");
+    editor_receive.setValue(stanzas.receive || "");
+    return false;
   };
 
   $.each(examples,function(k,v){
     var $element = $("<li><a href='#'>"+k+"</a></li>");
     $('#example_stanzas ul').append($element);
     
-    var $textarea = $('#code');
-    if($textarea.val() === ""){
-      $('#code').val(v);
-    }
-    
-    $element.click(function(){
-      editor.setValue(v);
-      return false;
-    });
+    $element.click(function(){ load_editor(v); });
   });
   
-  // Setup nice syntax highlighting for the form input
-  var editor = CodeMirror.fromTextArea(document.getElementById("code"), {mode: {name: "xmlpure"}});
+  load_editor(examples['Message with thread and parent']);
   
   // Parse stanza when send clicked
-  $('#stanza_form input:submit').click(function(){
-    var s = editor.getValue();
-    var stanza = new Frabjous.Stanza(s);
-    Frabjous.Parser.handle( stanza );
+  $('#stanzas input:submit').click(function(){
+    // How long to wait for reply
+    var delay = 0;
+    
+    var send_stanza    = editor_send.getValue();
+    var receive_stanza = editor_receive.getValue();
+    
+    if(!Ember.empty(send_stanza)){
+      delay = 5000;
+      Frabjous.Connection.send(send_stanza);
+    }
+    if(!Ember.empty(receive_stanza)){
+      setTimeout(function(){ Frabjous.Connection.receive(receive_stanza); },delay);
+    }
+    
     return false;
   });
   
 });
 
 Frabjous.log.level = "debug";
+
+Frabjous.Connection._send_now = function(s){ Frabjous.log.debug("Pretending to send",s); };
 
 Frabjous.contactsController = Ember.ArrayController.create({
   content: Frabjous.Store.findAll(Frabjous.Contact)

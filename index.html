@@ -116,16 +116,25 @@
         <h1>Frabjous Demo</h1>
       </div>
       <div class='row-fluid'>
-        <section id='example_stanzas' class='span6'>
+        <section id='example_stanzas' class='span3'>
           <h3>Example Stanzas</h3>
           <ul>
           </ul>
         </section>
-        <section class='span6'>
-          <h3>Stanzas to send</h3>
-          <form class="well" id='stanza_form'>
-            <textarea id="code" name="code"></textarea>
-            <input type="submit" value="Send" class="btn btn-primary">
+        <section class='span9'>
+          <h3>Stanzas</h3>
+          <form class="well form-inline" id='stanzas'>
+            <section class='half'>
+              <label for="send">To Send</label>
+              <textarea id="send" name="send"></textarea>
+            </section>
+            <section class='half'>
+              <label for="receive">To Receive</label>
+              <textarea id="receive" name="receive"></textarea>
+            </section>
+            <section class='clear'>
+              <input type="submit" value="Send" class="btn btn-primary">
+            </section>
           </form>
         </section>
       </div>
