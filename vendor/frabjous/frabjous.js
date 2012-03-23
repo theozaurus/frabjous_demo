@@ -28829,7 +28829,7 @@ Frabjous.Store = DS.Store.create({
   revision: 3,
   load_and_find: function(type,hash){
     this.load(type,hash);
-    this.find(type,hash.id);
+    return this.find(type,hash.id);
   }
 });
 
@@ -28851,16 +28851,18 @@ Frabjous.Parser = function(){
       }
       
       var items = itemsList.all();
+      var first_result;
       for(var i in items){
         if(items.hasOwnProperty(i)){
           var item = items[i];
           var frabjous_type = item.frabjous_type;
           delete item.frabjous_type;
           Frabjous.log.debug("Parsed "+frabjous_type+":",item);
-          Frabjous.Store.load_and_find(frabjous_type,item);
+          var result = Frabjous.Store.load_and_find(frabjous_type,item);
+          if(Ember.none(first_result)){ first_result = result; }
         }
       }
-      
+      return first_result;
     },
     handlers: function(){
       return _handlers;
@@ -29144,6 +29146,60 @@ Frabjous.Parser.register("Presence", function(stanza){
   
 });
 
+Frabjous.Error = DS.Model.extend({
+  by:                DS.attr('string'),
+  type:              DS.attr('string'),
+  text:              DS.attr('string'),
+  condition:         DS.attr('string'),
+  condition_payload: DS.attr('string')
+});
+
+Frabjous.Error.instance_properties = {
+  error: DS.hasOne(Frabjous.Error,{ embedded: true }),
+  has_error: function(){
+    return !Ember.none(this.get('error'));
+  }.property('error')
+};
+
+Frabjous.Message.reopen( Frabjous.Error.instance_properties );
+Frabjous.Presence.reopen( Frabjous.Error.instance_properties );
+
+Frabjous.Parser.register("Error", function(stanza){
+  
+  var $error_stanza = $(stanza.root().find('error[type]'));
+  
+  if( $error_stanza.length > 0 ){
+    var parsed           = {};
+    var error            = {};
+    var namespace        = "urn:ietf:params:xml:ns:xmpp-stanzas";
+    var text_stanza      = $error_stanza.find("text[xmlns='"+namespace+"']");
+    var condition_stanza = $error_stanza.find("[xmlns='"+namespace+"']").map(function(i,e){ if(e.nodeName != "text"){ return e; } });
+    var text, payload;
+    
+    if(text_stanza.length > 0){
+      text = $.trim(text_stanza.text());
+    } else {
+      text = null;
+    }
+    
+    payload = $.trim(condition_stanza.text());
+    if(payload.length === 0){ payload = null; }
+    
+    error.id                = stanza.id();
+    error.by                = $error_stanza.attr("by");
+    error.type              = $error_stanza.attr("type");
+    error.text              = text;
+    error.condition         = condition_stanza[0].nodeName;
+    error.condition_payload = payload;
+    
+    parsed.id = stanza.id();
+    parsed.error = error;
+    
+    return parsed;
+  }
+  
+});
+
 Frabjous.Xep0082 = {
   toDate: function(string){
     var format = /^\d{4}\-\d{2}\-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|([+\-]\d{2}:\d{2})))?$/;
@@ -29341,3 +29397,97 @@ Frabjous.Parser.register("XEP-0203", function(stanza){
     return parsed;
   }
 });
+Frabjous.Callback = (function(){
+
+  // Return the constructor
+  return function(args){
+
+    var that = this;
+
+    // Private methods
+    var run = function(name,args){
+      var func = that[name];
+      if(typeof func == "function"){ func.apply(that,args); }
+    };
+
+    // Privileged methods
+    this.handle = function(result){
+      var args = Array.prototype.slice.call(arguments).slice(1);
+      run('completed', args);
+      var o = result ? run('success', args) : run('error', args);
+    };
+
+    // Public attributes
+    this.completed = args.completed;
+    this.success   = args.success;
+    this.error     = args.error;
+  };
+
+})();
+Frabjous.CallbackList = (function(){
+  
+  // Return the constructor
+  return function(){
+    
+    // Private variables
+    var list = {};
+    
+    // Private functions
+    make_array = function(callbacks){
+      if(!(callbacks instanceof Array)){
+        callbacks = [callbacks];
+      }
+      return callbacks;
+    };
+    
+    martial = function(callbacks){
+      callbacks = $.map(callbacks,function(c){
+        if(c instanceof Frabjous.Callback){
+          return c;
+        }else{
+          return new Frabjous.Callback(c);
+        }
+      });
+      return callbacks;
+    };
+    
+    // Privileged functions
+    this.find = function(id){
+      return list[id] || [];
+    };
+    
+    this.add = function(id,callbacks){    
+      // Make sure callbacks is always an array
+      callbacks = make_array(callbacks);
+      
+      // Make sure callbacks are Frabjous.Callback
+      callbacks = martial(callbacks);
+      
+      // Add them
+      var current = this.find(id);
+      list[id] = current.concat.apply(current,callbacks);
+    };
+    
+    this.clear = function(id){
+      // Will clear all callbacks for a specified id
+      delete list[id];
+    };
+    
+    this.clear_all = function(){
+      // Will clear all callbacks
+      list = {};
+    };
+    
+    this.handle = function(id,issuccess){
+      // Get all arguments passed bar first one
+      var args = Array.prototype.slice.call(arguments).slice(1);
+      $.each(this.find(id),function(i,callback){
+        callback.handle.apply(this,args);
+      });
+      // Clean up callbacks
+      this.clear(id);
+    };
+    
+  };
+  
+})();

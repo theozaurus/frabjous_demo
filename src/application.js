@@ -3,7 +3,7 @@
 $(document).ready(function(){
   // Load up eample stanzas
   var examples = {
-    "Thread with parent":
+    "Message with thread and parent":
 "<message\n\
     to='romeo@montague.net/orchard'\n\
     from='juliet@capulet.com/balcony'\n\
@@ -13,7 +13,7 @@ $(document).ready(function(){
     e0ffe42b28561960c6b12b944a092794b9683a38\n\
   </thread>\n\
 </message>",
-    "Thread":
+    "Message with thread":
 "<message\n\
     to='romeo@montague.net/orchard'\n\
     from='juliet@capulet.com/balcony'\n\
@@ -49,7 +49,18 @@ $(document).ready(function(){
   <delay xmlns='urn:xmpp:delay'\n\
      from='juliet@capulet.com/balcony'\n\
      stamp='2012-03-21T11:37:07Z'/>\n\
-</presence>"
+</presence>",
+    "Message with error":
+"<message\n\
+    from='romeo@montague.net'\n\
+    to='juliet@capulet.com/balcony'\n\
+    type='error'>\n\
+  <error by='montague.net' type='cancel'>\n\
+    <gone xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'>\n\
+      xmpp:romeo@afterlife.montague.net\n\
+    </gone>\n\
+  </error>\n\
+</message>"
   };
 
   $.each(examples,function(k,v){

@@ -5,13 +5,31 @@
     <title>Frabjous Demo</title>
     <link href="vendor/codemirror/codemirror.css" rel="stylesheet" type="text/css">    
     <link href="vendor/bootstrap/bootstrap.css" rel="stylesheet" type="text/css">
+    <link href="src/application.css" rel="stylesheet" type="text/css">
     <script type="text/javascript" src="vendor/codemirror/codemirror.js"></script>
     <script type="text/javascript" src="vendor/codemirror/xmlpure.js"></script>
     <script type="text/javascript" src="vendor/frabjous/frabjous.js"></script>
     <script type="text/javascript" src="src/application.js"></script>
 
-    <script type="text/x-handlebars" data-template-name="presence">
+    <script type="text/x-handlebars" data-template-name="error">
       <dl>
+        <dt>Condition</dt>
+        <dd>{{content.condition}}</dd>
+        {{#if content.condition_payload }}
+          <dt>Condition Payload</dt>
+          <dd>{{content.condition_payload}}</dd>
+        {{/if}}
+        <dt>Type</dt>
+        <dd>{{content.type}}</dd>
+        {{#if content.text }}
+          <dt>Text</dt>
+          <dd>{{content.text}}</dd>
+        {{/if}}
+      </dl>
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="presence">
+      <dl {{bindAttr class="content.has_error:errored"}}>
         {{#if content.status }}            
           <dt>Status</dt>
           <dd>{{content.status}}</dd>
@@ -28,11 +46,17 @@
         <dd>{{content.priority}}</dd>
         <dt>Received</dt>
         <dd>{{content.received_at}}</dd>
+        {{#if content.has_error }}
+          <dt>Error</dt>
+          {{#with content.error}}
+          <dd>{{view templateName="error" contentBinding="this"}}</dd>
+          {{/with}}
+        {{/if}}
       </dl>
     </script>
 
     <script type="text/x-handlebars" data-template-name="message">
-      <dl>
+      <dl {{bindAttr class="content.has_error:errored"}}>
         <dt>ID</dt>
         <dd>{{content.id}}</dd>
         {{#if content.from }}      
@@ -54,6 +78,12 @@
         {{#if content.body }}
           <dt>Body</dt>
           <dd>{{content.body}}</dd>
+        {{/if}}
+        {{#if content.has_error }}
+          <dt>Error</dt>
+          {{#with content.error}}
+          <dd>{{view templateName="error" contentBinding="this"}}</dd>
+          {{/with}}
         {{/if}}
       </dl>
     </script>
