@@ -94,18 +94,14 @@
         <dd>{{content.id}}</dd>
         {{#if content.messages }}
           <dt>Messages</dt>
-          <dd><ul>
-            {{#each content.messages}}
-              <li>{{view templateName="message" contentBinding="this"}}</li>
-            {{/each}}
-          </ul></dd>
+          {{#each content.messages}}
+            <dd>{{view templateName="message" contentBinding="this"}}</dd>
+          {{/each}}
         {{/if}}
         <dt>Child Threads</dt>
-        <dd><ul>
-          {{#each content.child_threads}}
-            <li>{{view templateName="thread" contentBinding="this"}}</li>
-          {{/each}}
-        </ul></dd>
+        {{#each content.child_threads}}
+          <dd>{{view templateName="thread" contentBinding="this"}}</dd>
+        {{/each}}
       </dl>
     </script>
     
@@ -149,33 +145,21 @@
                   <dt>JID</dt>
                   <dd>{{jid}}</dd>
                   <dt>Messages from</dt>
-                  <dd>
-                    <ul>
-                      {{#each messages_from}}
-                        <li>{{view templateName="message" contentBinding="this"}}</li>
-                      {{/each}}
-                    </ul>
-                  </dd>
+                  {{#each messages_from}}
+                    <dd>{{view templateName="message" contentBinding="this"}}</dd>
+                  {{/each}}
                   <dt>Messages to</dt>
-                  <dd>
-                    <ul>
-                      {{#each messages_to}}
-                        <li>{{view templateName="message" contentBinding="this"}}</li>
-                      {{/each}}
-                    </ul>
-                  </dd>
+                  {{#each messages_to}}
+                    <dd>{{view templateName="message" contentBinding="this"}}</dd>
+                  {{/each}}
                   {{#if presence }}
                     <dt>Presence</dt>
                     <dd>{{view templateName="presence" contentBinding="presence"}}</dd>
                   {{/if}}
                   <dt>Presence History</dt>
-                  <dd>
-                    <ul>
-                      {{#each presence_history}}
-                        <li>{{view templateName="presence" contentBinding="this"}}</li>
-                      {{/each}}
-                    </ul>
-                  </dd>
+                  {{#each presence_history}}    
+                    <dd>{{view templateName="presence" contentBinding="this"}}</dd>
+                  {{/each}}
                 </dl>
               {{/each}}
             </ul>
