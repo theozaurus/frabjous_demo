@@ -82,6 +82,15 @@ $(document).ready(function(){
       xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/>\n\
   </error>\n\
 </message>"
+    },
+    "IQ Request for unsupported feature": {
+      "receive":
+"<iq type='get'\n\
+    from='juliet@capulet.lit/balcony'\n\
+    to='capulet.lit'\n\
+    id='frab1'>\n\
+  <magic xmlns='frabfrab'/>\n\
+</iq>"
     }
   };
 
@@ -125,9 +134,21 @@ $(document).ready(function(){
   
 });
 
-Frabjous.log.level = "debug";
+Frabjous.Log.level = "debug";
 
-Frabjous.Connection._send_now = function(s){ Frabjous.log.debug("Pretending to send",s); };
+Frabjous.Connection._send_now = function(s){
+  $('ol.wire').append("<li><pre class='cm-s-default from_client'></pre></li>");
+  output = $('ol.wire li pre').last()[0];
+  CodeMirror.runMode(s, {name: "xmlpure"}, output);
+};
+
+Frabjous.Connection._receive_raw = function(stanza){
+  $('ol.wire').append("<li><pre class='cm-s-default from_server'></pre></li>");
+  output = $('ol.wire li pre').last()[0];
+  CodeMirror.runMode(stanza, {name: "xmlpure"}, output);
+};
+
+Frabjous.Connection.set('jid','romeo@montague.net/orchard');
 
 Frabjous.contactsController = Ember.ArrayController.create({
   content: Frabjous.Store.findAll(Frabjous.Contact)

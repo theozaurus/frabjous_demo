@@ -10,3 +10,26 @@
 .clear {
   clear: both;
 }
+
+ol.wire {
+  list-style: none;
+  margin: 0;
+}
+
+ol.wire li pre {
+  margin: 0;
+  border: none;
+  font-size: 0.7em;
+  overflow: hidden;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+}
+
+ol.wire li pre.from_client {
+  background-color: #D1F0D1;
+}
+
+ol.wire li pre.from_server {
+  background-color: #FFD2D2;
+}
